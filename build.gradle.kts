@@ -38,7 +38,8 @@ runtime {
         windowsScriptTemplate = file("windowsScriptTemplate.txt")
     }
 
-    options.set(arrayListOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    modules.set(listOf("java.desktop"))
 }
 
 System.setProperty("RUNTIME_EXECUTABLE_NAME", "${base.archivesName.get()}-${version}-all.jar")
