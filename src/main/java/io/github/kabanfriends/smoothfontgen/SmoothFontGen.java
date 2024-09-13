@@ -5,7 +5,7 @@ import java.io.File;
 public class SmoothFontGen {
 
     public static void main(String[] args) {
-        Logger.getInstance().info("BESmoothFontGen by KabanFriends\n");
+        Logger.getInstance().info("BESmoothFontGen by KabanFriends");
 
         File msdfgenDir = new File("msdfgen");
         if (!msdfgenDir.exists()) {
