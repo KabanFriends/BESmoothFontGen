@@ -1,5 +1,7 @@
 package io.github.kabanfriends.smoothfontgen;
 
+import com.zaxxer.nuprocess.NuProcess;
+import com.zaxxer.nuprocess.NuProcessBuilder;
 import io.github.kabanfriends.smoothfontgen.config.Config;
 import io.github.kabanfriends.smoothfontgen.font.WrappedFont;
 
@@ -69,7 +71,7 @@ public class GlyphPage {
                         "msdfgen/msdfgen",
                         "mtsdf",
                         "-font",
-                        "\"" + fontPath + "\"",
+                        fontPath.toString(),
                         String.format("0x%04X", (int) id),
                         "-dimensions",
                         "64",
@@ -77,16 +79,16 @@ public class GlyphPage {
                         "-scale",
                         Float.toString(font.getFontInfo().fontSize() * POINTS_TO_SCALE),
                         "-o",
-                        "\"" + outFilename + "\""
+                        outFilename
                 ));
                 args.addAll(additionalArgs);
 
-                ProcessBuilder processBuilder = new ProcessBuilder(args);
-                processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+                NuProcessBuilder processBuilder = new NuProcessBuilder(args);
+                processBuilder.setProcessListener(new ProcessHandler());
 
                 try {
-                    Process process = processBuilder.start();
-                    int exitCode = process.waitFor();
+                    NuProcess process = processBuilder.start();
+                    int exitCode = process.waitFor(1, TimeUnit.MINUTES);
                     if (exitCode != 0) {
                         Exception e = new RuntimeException("Process exited with exit code " + exitCode);
                         Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
@@ -139,5 +141,28 @@ public class GlyphPage {
         }
     }
 
-    record Glyph(char charId, float width, BufferedImage image) {}
+    static class Glyph {
+
+        private final char charId;
+        private final float width;
+        private final BufferedImage image;
+
+        Glyph(char charId, float width, BufferedImage image) {
+            this.charId = charId;
+            this.width = width;
+            this.image = image;
+        }
+
+        public char charId() {
+            return charId;
+        }
+
+        public float width() {
+            return width;
+        }
+
+        public BufferedImage image() {
+            return image;
+        }
+    }
 }
