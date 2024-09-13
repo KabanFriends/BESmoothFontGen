@@ -30,9 +30,18 @@ public class TrueTypeWrappedFont implements WrappedFont {
     public float getWidth(char index) {
         try {
             CmapSubtable subTable = font.getCmap().getSubtable(3, 1);
-            return font.getAdvanceWidth(subTable.getGlyphId(index)) * fontInfo.fontSize() / font.getUnitsPerEm();
+            return font.getAdvanceWidth(subTable.getGlyphId(index)) * fontInfo.fontSize() * 96 / 72 / font.getUnitsPerEm() / 64;
         } catch (IOException ignored) {
             return 0F;
+        }
+    }
+
+    @Override
+    public float getCorrectionFactor() {
+        try {
+            return 1000F / font.getUnitsPerEm();
+        } catch (IOException ignored) {
+            return 1F;
         }
     }
 

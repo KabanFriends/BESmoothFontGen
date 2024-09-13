@@ -25,8 +25,6 @@ import java.util.concurrent.*;
 public class GlyphPage {
 
     private static final float POINTS_TO_SCALE = 1 / 11.75F;
-    private static final float POINTS_TO_PIXELS = 96 / 72F;
-    private static final float ONE_PIXEL = 1 / 64F;
     private static final BufferedImage EMPTY_IMAGE;
 
     static {
@@ -61,7 +59,7 @@ public class GlyphPage {
 
             Callable<Glyph> task = () -> {
                 WrappedFont font = main.getFontHolder().getFirstFont(id);
-                float width = (font.getWidth(id) * POINTS_TO_PIXELS + font.getFontInfo().padding()) * ONE_PIXEL * font.getFontInfo().widthScale();
+                float width = font.getWidth(id) + font.getFontInfo().padding() / 64;
 
                 if (id == 0x00) {
                     return new Glyph(id, width, EMPTY_IMAGE);
@@ -80,7 +78,7 @@ public class GlyphPage {
                         "64",
                         "64",
                         "-scale",
-                        Float.toString(font.getFontInfo().fontSize() * POINTS_TO_SCALE),
+                        Float.toString(font.getFontInfo().fontSize() * font.getCorrectionFactor() * POINTS_TO_SCALE),
                         "-o",
                         outFilename
                 ));

@@ -11,5 +11,7 @@ public interface WrappedFont {
 
     float getWidth(char index);
 
+    float getCorrectionFactor();
+
     boolean hasGlyph(char index);
 }

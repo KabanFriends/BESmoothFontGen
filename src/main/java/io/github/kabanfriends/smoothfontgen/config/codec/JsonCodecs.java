@@ -19,8 +19,7 @@ public class JsonCodecs {
             (element) -> new FontInfo(
                     element.getAsJsonObject().get("file").getAsString(),
                     element.getAsJsonObject().get("size").getAsFloat(),
-                    element.getAsJsonObject().get("padding").getAsFloat(),
-                    element.getAsJsonObject().get("widthScale").getAsFloat()
+                    element.getAsJsonObject().get("padding").getAsFloat()
             )
     );
     public static final JsonCodec<FontRange> FONT_RANGE = new JsonCodec<>(
