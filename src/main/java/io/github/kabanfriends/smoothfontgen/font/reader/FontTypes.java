@@ -7,12 +7,13 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class FontTypes {
 
-    public static final Set<FontReader> FONT_READERS = Set.of(
+    public static final List<FontReader> FONT_READERS = Arrays.asList(
             new TrueTypeFontReader(),
             new OpenTypeFontReader()
     );

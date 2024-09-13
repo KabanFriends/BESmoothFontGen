@@ -15,7 +15,10 @@ import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -54,20 +57,20 @@ public class GlyphPage {
             char id = (char) (start + i);
 
             String argStr = main.getConfig().get(Config.ADDITIONAL_ARGS);
-            List<String> additionalArgs = argStr.isEmpty() ? List.of() : List.of(argStr.split(" "));
+            List<String> additionalArgs = argStr.isEmpty() ? Collections.emptyList() : Arrays.asList(argStr.split(" "));
 
             Callable<Glyph> task = () -> {
                 WrappedFont font = main.getFontHolder().getFirstFont(id);
-                float width = (font.getWidth(id) * POINTS_TO_PIXELS + font.getFontInfo().padding()) * ONE_PIXEL;
+                float width = (font.getWidth(id) * POINTS_TO_PIXELS + font.getFontInfo().padding()) * ONE_PIXEL * font.getFontInfo().widthScale();
 
                 if (id == 0x00) {
                     return new Glyph(id, width, EMPTY_IMAGE);
                 }
 
-                Path fontPath = Path.of("fonts/" + font.getFontInfo().filename());
+                Path fontPath = Paths.get("fonts/" + font.getFontInfo().filename());
                 String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) id) + ".png";
 
-                List<String> args = new ArrayList<>(List.of(
+                List<String> args = new ArrayList<>(Arrays.asList(
                         "msdfgen/msdfgen",
                         "mtsdf",
                         "-font",

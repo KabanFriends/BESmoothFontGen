@@ -9,9 +9,10 @@ import io.github.kabanfriends.smoothfontgen.config.codec.JsonCodecs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Config {
 
@@ -20,7 +21,7 @@ public class Config {
     public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FontInfo[0]);
     public static final ConfigKey<String> ADDITIONAL_ARGS = new ConfigKey<>("additionalArgs", JsonCodecs.STRING, "");
 
-    private static final Set<ConfigKey<?>> CONFIG_KEYS = Set.of(
+    private static final List<ConfigKey<?>> CONFIG_KEYS = Arrays.asList(
             THREADS,
             RANGE,
             FONTS,

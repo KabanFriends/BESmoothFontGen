@@ -23,3 +23,15 @@ dependencies {
     implementation("commons-io:commons-io:2.16.1")
     implementation("com.zaxxer:nuprocess:2.0.6")
 }
+
+tasks {
+    jar {
+        manifest {
+            attributes["Main-Class"] = "io.github.kabanfriends.smoothfontgen.SmoothFontGen"
+        }
+    }
+
+    build {
+        dependsOn("shadowJar")
+    }
+}
