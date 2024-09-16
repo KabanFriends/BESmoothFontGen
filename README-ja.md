@@ -12,7 +12,7 @@ smoothフォントは、ゲーム内の以下に例を示す箇所で使用さ�
 1. [Java 8](https://www.java.com/download/)をインストールする
 2.  [BESmoothFontGen](https://github.com/KabanFriends/BESmoothFontGen/releases/latest)をダウンロードし、ZIPファイルを展開する
 3. [msdfgen](https://github.com/Chlumsky/msdfgen/releases/latest)をダウンロードし、ZIPファイルを展開する
-4. `msdfgen.exe`を、展開したBESmoothFontGenフォルダ内の`msdfgen`フォルダの中に配置する
+4. `msdfgen.exe`を、手順2で展開したBESmoothFontGenフォルダ内の`msdfgen`フォルダの中に配置する
 5. `config.json`をテキストエディタで開き、 [設定](#configuration)に示す項目を含むようにファイルを編集する
 6. 設定で指定したフォントファイルを、`fonts`フォルダの中に配置する
 7. `BESmoothFontGen.bat`を起動し、フォント生成を開始する
