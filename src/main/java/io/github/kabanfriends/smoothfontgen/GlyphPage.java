@@ -129,6 +129,9 @@ public class GlyphPage {
                 Glyph glyph = results[i].get();
                 graphics.drawImage(glyph.image(), x * 64, y * 64, null);
                 buffer.putFloat(glyph.width());
+                if (main.getConfig().get(Config.SHOW_GLYPH_INFO)) {
+                    Logger.getInstance().info("{} ({}) - Width: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width());
+                }
             } catch (CancellationException | ExecutionException | InterruptedException e) {
                 Logger.getInstance().error("Glyph generation task failed", e);
             }

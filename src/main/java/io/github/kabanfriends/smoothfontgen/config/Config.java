@@ -16,12 +16,14 @@ import java.util.Map;
 
 public class Config {
 
+    public static final ConfigKey<Boolean> SHOW_GLYPH_INFO = new ConfigKey<>("showGlyphInfo", JsonCodecs.BOOLEAN, false);
     public static final ConfigKey<Integer> THREADS = new ConfigKey<>("threads", JsonCodecs.INTEGER, 4);
     public static final ConfigKey<FontRange> RANGE = new ConfigKey<>("range", JsonCodecs.FONT_RANGE, new FontRange(0x0000, 0xFFFF));
     public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FontInfo[0]);
     public static final ConfigKey<String> ADDITIONAL_ARGS = new ConfigKey<>("additionalArgs", JsonCodecs.STRING, "");
 
     private static final List<ConfigKey<?>> CONFIG_KEYS = Arrays.asList(
+            SHOW_GLYPH_INFO,
             THREADS,
             RANGE,
             FONTS,
