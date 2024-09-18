@@ -32,6 +32,7 @@ public class FontHolder {
 
     public WrappedFont getFirstFont(char index) {
         for (WrappedFont font : fonts) {
+            // TODO: fix detection
             if (font.hasGlyph(index)) {
                 return font;
             }

@@ -62,7 +62,7 @@ public class GlyphPage {
                 float width = font.getWidth(id) + font.getFontInfo().padding() / 64;
 
                 if (id == 0x00) {
-                    return new Glyph(id, width, EMPTY_IMAGE);
+                    return new Glyph(id, width, EMPTY_IMAGE, "None");
                 }
 
                 Path fontPath = Paths.get("fonts/" + font.getFontInfo().filename());
@@ -100,7 +100,7 @@ public class GlyphPage {
                     BufferedImage image = ImageIO.read(imageFile);
                     imageFile.delete();
 
-                    return new Glyph(id, width, image);
+                    return new Glyph(id, width, image, font.getFontInfo().filename());
                 } catch (InterruptedException | IOException e) {
                     Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
                     throw e;
@@ -130,7 +130,7 @@ public class GlyphPage {
                 graphics.drawImage(glyph.image(), x * 64, y * 64, null);
                 buffer.putFloat(glyph.width());
                 if (main.getConfig().get(Config.SHOW_GLYPH_INFO)) {
-                    Logger.getInstance().info("{} ({}) - Width: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width());
+                    Logger.getInstance().info("{} ({}) - Width: {}, Source: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
                 }
             } catch (CancellationException | ExecutionException | InterruptedException e) {
                 Logger.getInstance().error("Glyph generation task failed", e);
@@ -150,11 +150,13 @@ public class GlyphPage {
         private final char charId;
         private final float width;
         private final BufferedImage image;
+        private final String source;
 
-        Glyph(char charId, float width, BufferedImage image) {
+        Glyph(char charId, float width, BufferedImage image, String source) {
             this.charId = charId;
             this.width = width;
             this.image = image;
+            this.source = source;
         }
 
         public char charId() {
@@ -167,6 +169,10 @@ public class GlyphPage {
 
         public BufferedImage image() {
             return image;
+        }
+
+        public String source() {
+            return source;
         }
     }
 }
