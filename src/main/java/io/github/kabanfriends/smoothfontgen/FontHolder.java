@@ -37,7 +37,7 @@ public class FontHolder {
                 return font;
             }
         }
-        return fonts.get(fonts.size() - 1);
+        return fonts.get(0);
     }
 
     public int getFontCount() {
