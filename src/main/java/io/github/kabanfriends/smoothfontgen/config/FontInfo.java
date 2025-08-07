@@ -5,11 +5,13 @@ public final class FontInfo {
     private final String filename;
     private final float fontSize;
     private final float padding;
+    private final String additionalArgs;
 
-    public FontInfo(String filename, float fontSize, float padding) {
+    public FontInfo(String filename, float fontSize, float padding, String additionalArgs) {
         this.filename = filename;
         this.fontSize = fontSize;
         this.padding = padding;
+        this.additionalArgs = additionalArgs;
     }
 
     public String filename() {
@@ -22,5 +24,9 @@ public final class FontInfo {
 
     public float padding() {
         return padding;
+    }
+
+    public String getAdditionalArgs() {
+        return additionalArgs;
     }
 }

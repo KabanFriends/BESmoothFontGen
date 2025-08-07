@@ -35,10 +35,10 @@ Generating the smooth font on Linux is several times faster than on Windows.
         {
             "file": "noto-jp-regular.ttf",
             "size": 38,
-            "padding": 0
+            "padding": 0,
+            "additionalArgs": "-pxrange 8 -translate 0 6"
         }
-    ],
-    "additionalArgs": "-pxrange 8 -translate 0 6"
+    ]
 }
 ```
 

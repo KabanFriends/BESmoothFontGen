@@ -54,9 +54,6 @@ public class GlyphPage {
         for (int i = 0; i < 0x100; i++) {
             char id = (char) (start + i);
 
-            String argStr = main.getConfig().get(Config.ADDITIONAL_ARGS);
-            List<String> additionalArgs = argStr.isEmpty() ? Collections.emptyList() : Arrays.asList(argStr.split(" "));
-
             Callable<Glyph> task = () -> {
                 WrappedFont font = main.getFontHolder().getFirstFont(id);
                 float width = font.getWidth(id) + font.getFontInfo().padding() / 64;
@@ -67,6 +64,9 @@ public class GlyphPage {
 
                 Path fontPath = Paths.get("fonts/" + font.getFontInfo().filename());
                 String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) id) + ".png";
+
+                String argStr = font.getFontInfo().getAdditionalArgs();
+                List<String> additionalArgs = argStr.isEmpty() ? Collections.emptyList() : Arrays.asList(argStr.split(" "));
 
                 List<String> args = new ArrayList<>(Arrays.asList(
                         "msdfgen/msdfgen",
@@ -84,26 +84,30 @@ public class GlyphPage {
                 ));
                 args.addAll(additionalArgs);
 
-                NuProcessBuilder processBuilder = new NuProcessBuilder(args);
-                processBuilder.setProcessListener(new ProcessHandler());
+                if (!main.getConfig().get(Config.TEST_MODE)) {
+                    NuProcessBuilder processBuilder = new NuProcessBuilder(args);
+                    processBuilder.setProcessListener(new ProcessHandler());
 
-                try {
-                    NuProcess process = processBuilder.start();
-                    int exitCode = process.waitFor(1, TimeUnit.MINUTES);
-                    if (exitCode != 0) {
-                        Exception e = new RuntimeException("Process exited with exit code " + exitCode);
+                    try {
+                        NuProcess process = processBuilder.start();
+                        int exitCode = process.waitFor(1, TimeUnit.MINUTES);
+                        if (exitCode != 0) {
+                            Exception e = new RuntimeException("Process exited with exit code " + exitCode);
+                            Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
+                            throw e;
+                        }
+
+                        File imageFile = new File(outFilename);
+                        BufferedImage image = ImageIO.read(imageFile);
+                        imageFile.delete();
+
+                        return new Glyph(id, width, image, font.getFontInfo().filename());
+                    } catch (InterruptedException | IOException e) {
                         Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
                         throw e;
                     }
-
-                    File imageFile = new File(outFilename);
-                    BufferedImage image = ImageIO.read(imageFile);
-                    imageFile.delete();
-
-                    return new Glyph(id, width, image, font.getFontInfo().filename());
-                } catch (InterruptedException | IOException e) {
-                    Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
-                    throw e;
+                } else {
+                    return new Glyph(id, width, EMPTY_IMAGE, font.getFontInfo().filename());
                 }
             };
             results[i] = executor.submit(task);
@@ -130,18 +134,29 @@ public class GlyphPage {
                 graphics.drawImage(glyph.image(), x * 64, y * 64, null);
                 buffer.putFloat(glyph.width());
                 if (main.getConfig().get(Config.SHOW_GLYPH_INFO)) {
-                    Logger.getInstance().info("{} ({}) - Width: {}, Source: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
+                    if (CharUtil.isControlChar(glyph.charId)) {
+                        Logger.getInstance().info("{} - Width: {}, Source: {}", String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
+                    } else {
+                        Logger.getInstance().info("{} ({}) - Width: {}, Source: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
+                    }
                 }
             } catch (CancellationException | ExecutionException | InterruptedException e) {
                 Logger.getInstance().error("Glyph generation task failed", e);
             }
         }
 
-        try (FileOutputStream outputStream = new FileOutputStream("smooth/smooth_" + String.format("%02X", pageId) + ".fontdata")) {
-            ImageIO.write(image, "PNG", new File("smooth/smooth_" + String.format("%02X", pageId) + ".png"));
-            outputStream.write(buffer.array());
-        } catch (IOException e) {
-            Logger.getInstance().error("Failed to write font page {}", String.format("%02X", pageId), e);
+        int remappedPageId = main.getRemapHandler().remap(pageId);
+        if (pageId != remappedPageId) {
+            Logger.getInstance().info("Remapping page {} to {}", String.format("%02X", pageId), String.format("%02X", remappedPageId));
+        }
+
+        if (!main.getConfig().get(Config.TEST_MODE)) {
+            try (FileOutputStream outputStream = new FileOutputStream("smooth/smooth_" + String.format("%02X", remappedPageId) + ".fontdata")) {
+                ImageIO.write(image, "PNG", new File("smooth/smooth_" + String.format("%02X", remappedPageId) + ".png"));
+                outputStream.write(buffer.array());
+            } catch (IOException e) {
+                Logger.getInstance().error("Failed to write font page {}", String.format("%02X", remappedPageId), e);
+            }
         }
     }
 

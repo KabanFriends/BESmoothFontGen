@@ -48,7 +48,9 @@ public class TrueTypeWrappedFont implements WrappedFont {
     @Override
     public boolean hasGlyph(char index) {
         try {
-            return font.hasGlyph(String.valueOf(index));
+            int glyphId = font.getCmap().getSubtable(3, 1).getGlyphId(index);
+            String glyphName = font.getPostScript().getName(glyphId);
+            return glyphName != null && font.hasGlyph(glyphName);
         } catch (IOException ignored) {
             return false;
         }
