@@ -19,7 +19,7 @@ public class RemapHandler {
     }
 
     public boolean canWritePage(int originalPage) {
-        return !remaps.containsValue(originalPage);
+        return remaps.containsKey(originalPage) || !remaps.containsValue(originalPage);
     }
 
     public int remap(int originalPage) {
