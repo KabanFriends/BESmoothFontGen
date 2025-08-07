@@ -27,17 +27,23 @@ public class RemapHandler {
     }
 
     public void writeRemappingFile() {
-        ByteBuffer buffer = ByteBuffer.allocate(0x100 * 4 * remaps.size());
+        ByteBuffer buffer = ByteBuffer.allocate(0x100 * 8 * remaps.size());
         for (int i = 0; i < 0x100; i++) {
             if (!remaps.containsKey(i)) {
                 continue;
             }
             int remapped = remaps.get(i);
             for (int j = 0; j < 0x100; j++) {
+                // Remap the original characters
                 buffer.put((byte) j);
                 buffer.put((byte) i);
                 buffer.put((byte) j);
                 buffer.put((byte) remapped);
+                // Remap the target characters to 0xFFFE
+                buffer.put((byte) j);
+                buffer.put((byte) remapped);
+                buffer.put((byte) 0xFE);
+                buffer.put((byte) 0xFF);
             }
         }
         try (FileOutputStream outputStream = new FileOutputStream("smooth/remapping.dat")) {
