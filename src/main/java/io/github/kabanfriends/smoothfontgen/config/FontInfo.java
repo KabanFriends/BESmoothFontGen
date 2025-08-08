@@ -1,32 +1,14 @@
 package io.github.kabanfriends.smoothfontgen.config;
 
-public final class FontInfo {
+import io.github.kabanfriends.smoothfontgen.font.WrappedFont;
 
-    private final String filename;
-    private final float fontSize;
-    private final float padding;
-    private final String additionalArgs;
+public interface FontInfo<T extends WrappedFont<?>> {
 
-    public FontInfo(String filename, float fontSize, float padding, String additionalArgs) {
-        this.filename = filename;
-        this.fontSize = fontSize;
-        this.padding = padding;
-        this.additionalArgs = additionalArgs;
-    }
+    String name();
 
-    public String filename() {
-        return filename;
-    }
+    float padding();
 
-    public float fontSize() {
-        return fontSize;
-    }
+    String additionalArgs();
 
-    public float padding() {
-        return padding;
-    }
-
-    public String getAdditionalArgs() {
-        return additionalArgs;
-    }
+    WrappedFont<?> loadFont();
 }

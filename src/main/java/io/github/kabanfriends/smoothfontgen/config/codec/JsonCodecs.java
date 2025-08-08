@@ -2,9 +2,8 @@ package io.github.kabanfriends.smoothfontgen.config.codec;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import io.github.kabanfriends.smoothfontgen.config.FontInfo;
-import io.github.kabanfriends.smoothfontgen.config.FontRange;
-import io.github.kabanfriends.smoothfontgen.config.PageRemap;
+import io.github.kabanfriends.smoothfontgen.JsonUtil;
+import io.github.kabanfriends.smoothfontgen.config.*;
 
 import java.lang.reflect.Array;
 import java.util.function.Function;
@@ -22,14 +21,7 @@ public class JsonCodecs {
                     Integer.parseInt(element.getAsJsonObject().get("to").getAsString(), 16)
             )
     );
-    public static final JsonCodec<FontInfo[]> FONT_PROPERTY_ARRAY = new ArrayCodec<>(FontInfo.class,
-            (element) -> new FontInfo(
-                    element.getAsJsonObject().get("file").getAsString(),
-                    element.getAsJsonObject().get("size").getAsFloat(),
-                    getOrDefault(element.getAsJsonObject().get("padding"), JsonElement::getAsFloat, 0f),
-                    getOrDefault(element.getAsJsonObject().get("additionalArgs"), JsonElement::getAsString, "")
-            )
-    );
+    public static final JsonCodec<FontInfo[]> FONT_PROPERTY_ARRAY = new ArrayCodec<>(FontInfo.class, FontInfoBuilder::build);
     public static final JsonCodec<FontRange> FONT_RANGE = new JsonCodec<>(
             (property) -> new FontRange(
                     Integer.parseInt(property.get().getAsJsonObject().get("from").getAsString(), 16) * 0x100,
@@ -50,14 +42,6 @@ public class JsonCodecs {
                         return array;
                     }
             );
-        }
-    }
-
-    private static <T> T getOrDefault(JsonElement element, Function<JsonElement, T> getter, T defaultValue) {
-        try {
-            return getter.apply(element);
-        } catch (Exception e) {
-            return defaultValue;
         }
     }
 }

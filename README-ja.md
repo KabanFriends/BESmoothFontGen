@@ -33,6 +33,7 @@ Linux上でのフォント生成は、Windowsに比べて数倍早くなりま�
     },
     "fonts": [
         {
+            "type": "file",
             "file": "noto-jp-regular.ttf",
             "size": 38,
             "padding": 0,
@@ -49,7 +50,7 @@ Linux上でのフォント生成は、Windowsに比べて数倍早くなりま�
     - `file`: フォントのファイル名です。ここに指定したファイルを`fonts`フォルダ内に配置する必要があります。
     - `size`: 文字サイズをポイント単位で指定します。
     - `padding`: 文字幅に追加する空白の量です。
-- `additionalArgs`: フォントテクスチャの生成時、msdfgenに渡す追加のパラメータです。各パラメータの詳細情報は[Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen)を確認してください。
+    - `additionalArgs`: フォントテクスチャの生成時、msdfgenに渡す追加のパラメータです。各パラメータの詳細情報は[Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen)を確認してください。
 
 ## ビルド
 以下のコマンドを使用すると、BESmoothFontGenを自分でビルドできます。

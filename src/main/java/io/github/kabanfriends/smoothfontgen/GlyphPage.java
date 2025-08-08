@@ -55,33 +55,19 @@ public class GlyphPage {
             char id = (char) (start + i);
 
             Callable<Glyph> task = () -> {
-                WrappedFont font = main.getFontHolder().getFirstFont(id);
+                WrappedFont<?> font = main.getFontHolder().getFirstFont(id);
                 float width = font.getWidth(id) + font.getFontInfo().padding() / 64;
 
                 if (id == 0x00) {
                     return new Glyph(id, width, EMPTY_IMAGE, "None");
                 }
 
-                Path fontPath = Paths.get("fonts/" + font.getFontInfo().filename());
-                String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) id) + ".png";
-
-                String argStr = font.getFontInfo().getAdditionalArgs();
+                String argStr = font.getFontInfo().additionalArgs();
                 List<String> additionalArgs = argStr.isEmpty() ? Collections.emptyList() : Arrays.asList(argStr.split(" "));
 
-                List<String> args = new ArrayList<>(Arrays.asList(
-                        "msdfgen/msdfgen",
-                        "mtsdf",
-                        "-font",
-                        fontPath.toString(),
-                        String.format("0x%04X", (int) id),
-                        "-dimensions",
-                        "64",
-                        "64",
-                        "-scale",
-                        Float.toString(font.getFontInfo().fontSize() * font.getCorrectionFactor() * POINTS_TO_SCALE),
-                        "-o",
-                        outFilename
-                ));
+                String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) id) + ".png";
+
+                List<String> args = font.processGlyph(id, outFilename);
                 args.addAll(additionalArgs);
 
                 if (!main.getConfig().get(Config.TEST_MODE)) {
@@ -99,15 +85,15 @@ public class GlyphPage {
 
                         File imageFile = new File(outFilename);
                         BufferedImage image = ImageIO.read(imageFile);
-                        imageFile.delete();
+                        font.postCleanup(id, outFilename);
 
-                        return new Glyph(id, width, image, font.getFontInfo().filename());
+                        return new Glyph(id, width, image, font.getFontInfo().name());
                     } catch (InterruptedException | IOException e) {
                         Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
                         throw e;
                     }
                 } else {
-                    return new Glyph(id, width, EMPTY_IMAGE, font.getFontInfo().filename());
+                    return new Glyph(id, width, EMPTY_IMAGE, font.getFontInfo().name());
                 }
             };
             results[i] = executor.submit(task);

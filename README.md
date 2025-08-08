@@ -33,6 +33,7 @@ Generating the smooth font on Linux is several times faster than on Windows.
     },
     "fonts": [
         {
+            "type": "file",
             "file": "noto-jp-regular.ttf",
             "size": 38,
             "padding": 0,
@@ -49,7 +50,7 @@ Generating the smooth font on Linux is several times faster than on Windows.
     - `file`: Name of the font file. TTF and OTF font formats are supported, and font files defined here must be located in the `fonts` folder.
     - `size`: Size of the character to render in points.
     - `padding`: Amount of extra padding to add to the width of each character in this font.
-- `additionalArgs`: Additional parameters passed to the msdfgen process when generating the font texture. See [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) for more information.
+    - `additionalArgs`: Additional parameters passed to the msdfgen process when generating the font texture. See [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) for more information.
 
 ## Compiling
 You can compile BESmoothFontGen yourself with the following command:

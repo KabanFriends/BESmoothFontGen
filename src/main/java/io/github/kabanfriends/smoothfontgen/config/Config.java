@@ -20,7 +20,7 @@ public class Config {
     public static final ConfigKey<Boolean> SHOW_GLYPH_INFO = new ConfigKey<>("showGlyphInfo", JsonCodecs.BOOLEAN, false);
     public static final ConfigKey<Integer> THREADS = new ConfigKey<>("threads", JsonCodecs.INTEGER, 4);
     public static final ConfigKey<FontRange> RANGE = new ConfigKey<>("range", JsonCodecs.FONT_RANGE, new FontRange(0x0000, 0xFFFF));
-    public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FontInfo[0]);
+    public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FileFontInfo[0]);
     public static final ConfigKey<PageRemap[]> PAGE_REMAPPING = new ConfigKey<>("pageRemapping", JsonCodecs.PAGE_REMAP_ARRAY, new PageRemap[0]);
 
     private static final List<ConfigKey<?>> CONFIG_KEYS = Arrays.asList(

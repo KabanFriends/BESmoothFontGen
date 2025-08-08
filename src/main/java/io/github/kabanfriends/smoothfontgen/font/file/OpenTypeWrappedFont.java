@@ -1,28 +1,28 @@
-package io.github.kabanfriends.smoothfontgen.font;
+package io.github.kabanfriends.smoothfontgen.font.file;
 
-import io.github.kabanfriends.smoothfontgen.config.FontInfo;
+import io.github.kabanfriends.smoothfontgen.config.FileFontInfo;
 import org.apache.fontbox.ttf.CmapSubtable;
-import org.apache.fontbox.ttf.TrueTypeFont;
+import org.apache.fontbox.ttf.OpenTypeFont;
 
 import java.io.IOException;
 
-public class TrueTypeWrappedFont implements WrappedFont {
+public class OpenTypeWrappedFont implements FileWrappedFont {
 
-    private final FontInfo fontInfo;
-    private final TrueTypeFont font;
+    private final FileFontInfo fileFontInfo;
+    private final OpenTypeFont font;
 
-    public TrueTypeWrappedFont(FontInfo fontInfo, TrueTypeFont font) {
-        this.fontInfo = fontInfo;
+    public OpenTypeWrappedFont(FileFontInfo fileFontInfo, OpenTypeFont font) {
+        this.fileFontInfo = fileFontInfo;
         this.font = font;
     }
 
     @Override
-    public FontInfo getFontInfo() {
-        return fontInfo;
+    public FileFontInfo getFontInfo() {
+        return fileFontInfo;
     }
 
     @Override
-    public TrueTypeFont getFont() {
+    public OpenTypeFont getFont() {
         return font;
     }
 
@@ -30,7 +30,7 @@ public class TrueTypeWrappedFont implements WrappedFont {
     public float getWidth(char index) {
         try {
             CmapSubtable subTable = font.getCmap().getSubtable(3, 1);
-            return font.getAdvanceWidth(subTable.getGlyphId(index)) * fontInfo.fontSize() * 96 / 72 / font.getUnitsPerEm() / 64;
+            return font.getAdvanceWidth(subTable.getGlyphId(index)) * fileFontInfo.fontSize() * 96 / 72 / font.getUnitsPerEm() / 64;
         } catch (IOException ignored) {
             return 0F;
         }

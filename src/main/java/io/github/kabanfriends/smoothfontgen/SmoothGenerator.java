@@ -16,8 +16,8 @@ public class SmoothGenerator {
         this.config = new Config();
         config.load(new File("config.json"));
 
-        FontInfo[] fontInfoArray = config.get(Config.FONTS);
-        this.fontHolder = new FontHolder(fontInfoArray);
+        FontInfo<?>[] fileFontInfoArray = config.get(Config.FONTS);
+        this.fontHolder = new FontHolder(fileFontInfoArray);
         this.remapHandler = new RemapHandler(config.get(Config.PAGE_REMAPPING));
     }
 
@@ -26,6 +26,13 @@ public class SmoothGenerator {
             Logger.getInstance().error("No valid font files were found, aborting");
             return;
         }
+
+        /*
+        if (config.get(Config.TEST_MODE)) {
+            Tests.testShapeDescGenerator();
+            return;
+        }
+        */
 
         Logger.getInstance().info("Writing remapping.dat");
         if (!config.get(Config.TEST_MODE)) {

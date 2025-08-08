@@ -1,8 +1,11 @@
 package io.github.kabanfriends.smoothfontgen;
 
 import io.github.kabanfriends.smoothfontgen.config.FontInfo;
+import io.github.kabanfriends.smoothfontgen.config.PixelFontInfo;
 import io.github.kabanfriends.smoothfontgen.font.WrappedFont;
-import io.github.kabanfriends.smoothfontgen.font.reader.FontTypes;
+import io.github.kabanfriends.smoothfontgen.font.file.reader.FileFontTypes;
+import io.github.kabanfriends.smoothfontgen.font.pixel.MissingPixelWrappedFont;
+import io.github.kabanfriends.smoothfontgen.font.pixel.PixelWrappedFont;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,34 +13,37 @@ import java.util.List;
 
 public class FontHolder {
 
-    private final List<WrappedFont> fonts;
+    private final WrappedFont<?> fallbackFont;
 
-    public FontHolder(FontInfo[] fontInfoArray) {
+    private final List<WrappedFont<?>> fonts;
+
+    public FontHolder(FontInfo<?>[] fontInfoArray) {
         this.fonts = new ArrayList<>(fontInfoArray.length);
 
         for (int i = 0; i < fontInfoArray.length; i++) {
-            File file = new File("fonts/" + fontInfoArray[i].filename());
-            if (!file.exists()) {
-                Logger.getInstance().warn("Font file {} was not found, skipping", fontInfoArray[i].filename());
+            WrappedFont<?> font = fontInfoArray[i].loadFont();
+            if (font == null) {
+                Logger.getInstance().warn("Font {} could not be loaded, skipping", fontInfoArray[i].name());
                 continue;
             }
+            fonts.add(font);
+        }
 
-            WrappedFont font = FontTypes.parse(fontInfoArray[i], file);
-            if (font != null) {
-                Logger.getInstance().info("Font loaded: {}", file.getName());
-                fonts.add(font);
-            }
+        WrappedFont<?> first = fonts.get(0);
+        if (first instanceof PixelWrappedFont) {
+            this.fallbackFont = new MissingPixelWrappedFont(((PixelWrappedFont) first).getFontInfo());
+        } else {
+            this.fallbackFont = first;
         }
     }
 
-    public WrappedFont getFirstFont(char index) {
-        for (WrappedFont font : fonts) {
-            // TODO: fix detection
+    public WrappedFont<?> getFirstFont(char index) {
+        for (WrappedFont<?> font : fonts) {
             if (font.hasGlyph(index)) {
                 return font;
             }
         }
-        return fonts.get(0);
+        return fallbackFont;
     }
 
     public int getFontCount() {
