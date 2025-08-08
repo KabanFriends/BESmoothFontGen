@@ -52,6 +52,8 @@ public final class FileFontInfo implements FontInfo<FileWrappedFont> {
             return null;
         }
 
-        return FileFontTypes.parse(this, file);
+        WrappedFont<?> font = FileFontTypes.parse(this, file);
+        Logger.getInstance().info("Loaded file font: {}", filename);
+        return font;
     }
 }

@@ -61,7 +61,9 @@ public final class PixelFontInfo implements FontInfo<PixelWrappedFont> {
         }
 
         try {
-            return new PixelWrappedFont(this, jsonFile, pngFile);
+            PixelWrappedFont font = new PixelWrappedFont(this, jsonFile, pngFile);
+            Logger.getInstance().info("Loaded pixel font: {} (W:{} H:{} RS:{})", name, font.getGridWidth(), font.getGridHeight(), font.getRenderScale());
+            return font;
         } catch (Throwable e) {
             Logger.getInstance().error("Failed to load pixel font {}", name, e);
             return null;

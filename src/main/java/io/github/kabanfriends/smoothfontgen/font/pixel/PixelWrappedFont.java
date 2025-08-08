@@ -100,6 +100,18 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
         return (width + 1 + info.internalPadding()) / (float) gridWidth * info.scale();
     }
 
+    public int getGridHeight() {
+        return gridHeight;
+    }
+
+    public int getGridWidth() {
+        return gridWidth;
+    }
+
+    public double getRenderScale() {
+        return 64.0 / gridWidth * info.scale();
+    }
+
     @Override
     public boolean hasGlyph(char index) {
         return glyphs.containsKey(index);
@@ -112,7 +124,6 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
     @Override
     public List<String> processGlyph(char id, String outFilename) {
         String hexId = String.format("%04X", (int) id);
-        double renderScale = 64.0 / gridWidth * info.scale();
         Image image = getGlyphImage(id);
         String shapeDesc = ShapeDescGenerator.imageToShapeDesc(image);
 
@@ -135,7 +146,7 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
                 "64",
                 "64",
                 "-scale",
-                Double.toString(renderScale),
+                Double.toString(getRenderScale()),
                 "-o",
                 outFilename
         ));
