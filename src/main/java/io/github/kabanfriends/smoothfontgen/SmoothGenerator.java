@@ -18,7 +18,7 @@ public class SmoothGenerator {
 
         FontInfo<?>[] fileFontInfoArray = config.get(Config.FONTS);
         this.fontHolder = new FontHolder(fileFontInfoArray);
-        this.remapHandler = new RemapHandler(config.get(Config.PAGE_REMAPPING));
+        this.remapHandler = new RemapHandler(this, config.get(Config.PAGE_REMAPPING));
     }
 
     public void start() {

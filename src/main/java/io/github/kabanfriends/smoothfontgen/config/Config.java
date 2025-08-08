@@ -22,6 +22,7 @@ public class Config {
     public static final ConfigKey<FontRange> RANGE = new ConfigKey<>("range", JsonCodecs.FONT_RANGE, new FontRange(0x0000, 0xFFFF));
     public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FileFontInfo[0]);
     public static final ConfigKey<PageRemap[]> PAGE_REMAPPING = new ConfigKey<>("pageRemapping", JsonCodecs.PAGE_REMAP_ARRAY, new PageRemap[0]);
+    public static final ConfigKey<Boolean> REMAP_HANGUL_CHARS = new ConfigKey<>("remapHangulChars", JsonCodecs.BOOLEAN, false);
 
     private static final List<ConfigKey<?>> CONFIG_KEYS = Arrays.asList(
             TEST_MODE,
@@ -29,7 +30,8 @@ public class Config {
             THREADS,
             RANGE,
             FONTS,
-            PAGE_REMAPPING
+            PAGE_REMAPPING,
+            REMAP_HANGUL_CHARS
     );
 
     private final Map<ConfigKey<?>, Object> values = new HashMap<>();

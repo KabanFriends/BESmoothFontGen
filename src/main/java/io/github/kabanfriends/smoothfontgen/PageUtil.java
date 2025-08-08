@@ -31,4 +31,9 @@ public class PageUtil {
         }
         return false;
     }
+
+    public static boolean isPageHangul(int page) {
+        // https://jrgraphix.net/r/Unicode/ - Hangul Syllables
+        return page >= 0xAC && page <= 0xD6;
+    }
 }

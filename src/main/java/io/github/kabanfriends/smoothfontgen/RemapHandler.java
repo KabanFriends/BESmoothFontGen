@@ -1,5 +1,6 @@
 package io.github.kabanfriends.smoothfontgen;
 
+import io.github.kabanfriends.smoothfontgen.config.Config;
 import io.github.kabanfriends.smoothfontgen.config.PageRemap;
 
 import java.io.FileOutputStream;
@@ -9,9 +10,11 @@ import java.util.Map;
 
 public class RemapHandler {
 
+    private final SmoothGenerator main;
     private final Map<Integer, Integer> remaps;
 
-    public RemapHandler(PageRemap[] remps) {
+    public RemapHandler(SmoothGenerator generator, PageRemap[] remps) {
+        this.main = generator;
         this.remaps = new HashMap<>();
         for (PageRemap remap : remps) {
             this.remaps.put(remap.from(), remap.to());
@@ -40,10 +43,13 @@ public class RemapHandler {
                 buffer.put((byte) j);
                 buffer.put((byte) remapped);
                 // Remap the target characters to 0xFFFE
-                buffer.put((byte) j);
-                buffer.put((byte) remapped);
-                buffer.put((byte) 0xFE);
-                buffer.put((byte) 0xFF);
+                int page = remapped >> 8;
+                if (main.getConfig().get(Config.REMAP_HANGUL_CHARS) || !PageUtil.isPageHangul(page)) {
+                    buffer.put((byte) j);
+                    buffer.put((byte) remapped);
+                    buffer.put((byte) 0xFE);
+                    buffer.put((byte) 0xFF);
+                }
             }
         }
         try (FileOutputStream outputStream = new FileOutputStream("smooth/remapping.dat")) {
