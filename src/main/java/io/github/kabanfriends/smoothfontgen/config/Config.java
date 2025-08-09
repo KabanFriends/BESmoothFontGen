@@ -9,6 +9,7 @@ import io.github.kabanfriends.smoothfontgen.config.codec.JsonCodecs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +38,8 @@ public class Config {
     private final Map<ConfigKey<?>, Object> values = new HashMap<>();
 
     public void load(File configFile) {
-        try {
-            JsonObject json = JsonParser.parseReader(new FileReader(configFile)).getAsJsonObject();
+        try (FileReader reader = new FileReader(configFile)) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
             for (ConfigKey<?> key : CONFIG_KEYS) {
                 if (!json.has(key.id())) {
                     continue;
@@ -49,7 +50,7 @@ public class Config {
                     Logger.getInstance().error("Failed to parse config key {}", key.id(), e);
                 }
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             Logger.getInstance().error("Failed to read config file", e);
         } catch (JsonParseException | IllegalStateException e) {
             Logger.getInstance().error("Malformed config json", e);

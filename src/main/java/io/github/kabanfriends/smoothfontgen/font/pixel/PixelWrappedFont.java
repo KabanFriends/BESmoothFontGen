@@ -2,7 +2,11 @@ package io.github.kabanfriends.smoothfontgen.font.pixel;
 
 import com.google.gson.*;
 import io.github.kabanfriends.smoothfontgen.ImageUtil;
+import io.github.kabanfriends.smoothfontgen.Logger;
+import io.github.kabanfriends.smoothfontgen.config.JsonProperty;
 import io.github.kabanfriends.smoothfontgen.config.PixelFontInfo;
+import io.github.kabanfriends.smoothfontgen.config.WidthOverride;
+import io.github.kabanfriends.smoothfontgen.config.codec.JsonCodecs;
 import io.github.kabanfriends.smoothfontgen.font.WrappedFont;
 
 import javax.imageio.ImageIO;
@@ -26,14 +30,16 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
 
     private final Map<Character, Image> glyphs;
     private final Map<Character, Integer> glyphWidths;
+    private final WidthOverride[] widthOverrides;
     private final int gridWidth;
     private final int gridHeight;
 
     protected PixelWrappedFont(PixelFontInfo parent) {
-        this.info = new PixelFontInfo("#missing", parent.internalPadding(), parent.padding(), parent.scale(), parent.spaceWidth(), parent.additionalArgs());
+        this.info = new PixelFontInfo("#missing", parent.internalPadding(), parent.padding(), parent.scale(), parent.spaceWidth(), null, parent.additionalArgs());
         this.fullImage = ImageUtil.loadImage(Objects.requireNonNull(getClass().getResource("/missing_char.png")));
         this.gridWidth = 8;
         this.gridHeight = 8;
+        this.widthOverrides = new WidthOverride[0];
         this.glyphs = new HashMap<>();
         this.glyphWidths = new HashMap<>();
     }
@@ -84,6 +90,25 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
 
             glyphWidths.put(c, maxWidth);
         }
+
+        if (info.widthOverride() != null) {
+            File file = new File(info.widthOverride());
+            if (file.exists()) {
+                try (FileReader reader = new FileReader(file)) {
+                    JsonObject overrideJson = JsonParser.parseReader(reader).getAsJsonObject();
+                    this.widthOverrides = JsonCodecs.WIDTH_OVERRIDE_ARRAY.deserialize(new JsonProperty(overrideJson, "overrides"));
+                    Logger.getInstance().info("Using width override file {}", info.widthOverride());
+                } catch (IOException e) {
+                    Logger.getInstance().error("Failed to read width override file {}", info.widthOverride(), e);
+                    throw e;
+                }
+            } else {
+                this.widthOverrides = new WidthOverride[0];
+                Logger.getInstance().warn("Width override file {} does not exist", info.widthOverride());
+            }
+        } else {
+            this.widthOverrides = new WidthOverride[0];
+        }
     }
 
     @Override
@@ -93,9 +118,15 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
 
     @Override
     public float getWidth(char index) {
-        int width = glyphWidths.getOrDefault(index, 0);
+        float width = glyphWidths.getOrDefault(index, 0);
         if (index == ' ') {
             width = info.spaceWidth();
+        }
+        for (WidthOverride override : widthOverrides) {
+            if (index >= override.from() && index <= override.to()) {
+                width = override.width();
+                break;
+            }
         }
         return (width + 1 + info.internalPadding()) / (float) gridWidth * info.scale();
     }

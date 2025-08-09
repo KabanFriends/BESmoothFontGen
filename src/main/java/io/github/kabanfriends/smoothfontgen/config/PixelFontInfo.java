@@ -11,15 +11,17 @@ public final class PixelFontInfo implements FontInfo<PixelWrappedFont> {
     private final float padding;
     private final float externalPadding;
     private final float scale;
-    private final int spaceWidth;
+    private final float spaceWidth;
+    private final String widthOverride;
     private final String additionalArgs;
 
-    public PixelFontInfo(String name, float padding, float externalPadding, float scale, int spaceWidth, String additionalArgs) {
+    public PixelFontInfo(String name, float padding, float externalPadding, float scale, float spaceWidth, String widthOverride, String additionalArgs) {
         this.name = name;
         this.padding = padding;
         this.externalPadding = externalPadding;
         this.scale = scale;
         this.spaceWidth = spaceWidth;
+        this.widthOverride = widthOverride;
         this.additionalArgs = additionalArgs;
     }
 
@@ -41,8 +43,12 @@ public final class PixelFontInfo implements FontInfo<PixelWrappedFont> {
         return scale;
     }
 
-    public int spaceWidth() {
+    public float spaceWidth() {
         return spaceWidth;
+    }
+
+    public String widthOverride() {
+        return widthOverride;
     }
 
     @Override

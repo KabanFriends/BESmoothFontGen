@@ -27,7 +27,8 @@ public class FontInfoBuilder {
                 JsonUtil.getOrDefault(element.getAsJsonObject().get("padding"), JsonElement::getAsFloat, 1f),
                 JsonUtil.getOrDefault(element.getAsJsonObject().get("externalPadding"), JsonElement::getAsFloat, 0f),
                 JsonUtil.getOrDefault(element.getAsJsonObject().get("scale"), JsonElement::getAsFloat, 1f),
-                JsonUtil.getOrDefault(element.getAsJsonObject().get("spaceWidth"), JsonElement::getAsInt, 4),
+                JsonUtil.getOrDefault(element.getAsJsonObject().get("spaceWidth"), JsonElement::getAsFloat, 4f),
+                JsonUtil.getOrDefault(element.getAsJsonObject().get("widthOverride"), JsonElement::getAsString, null),
                 JsonUtil.getOrDefault(element.getAsJsonObject().get("additionalArgs"), JsonElement::getAsString, "")
         ));
     }

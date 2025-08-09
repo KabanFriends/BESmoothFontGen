@@ -22,6 +22,13 @@ public class JsonCodecs {
             )
     );
     public static final JsonCodec<FontInfo[]> FONT_PROPERTY_ARRAY = new ArrayCodec<>(FontInfo.class, FontInfoBuilder::build);
+    public static final JsonCodec<WidthOverride[]> WIDTH_OVERRIDE_ARRAY = new ArrayCodec<>(WidthOverride.class,
+            (element) -> new WidthOverride(
+                    element.getAsJsonObject().get("from").getAsString().charAt(0),
+                    element.getAsJsonObject().get("to").getAsString().charAt(0),
+                    element.getAsJsonObject().get("width").getAsFloat()
+            )
+    );
     public static final JsonCodec<FontRange> FONT_RANGE = new JsonCodec<>(
             (property) -> new FontRange(
                     Integer.parseInt(property.get().getAsJsonObject().get("from").getAsString(), 16) * 0x100,
