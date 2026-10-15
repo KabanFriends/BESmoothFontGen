@@ -21,7 +21,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation("org.apache.pdfbox:fontbox:3.0.3")
     implementation("commons-io:commons-io:2.16.1")
-    implementation("com.zaxxer:nuprocess:2.0.6")
+    implementation("com.zaxxer:nuprocess:4.0.0")
 }
 
 tasks {
