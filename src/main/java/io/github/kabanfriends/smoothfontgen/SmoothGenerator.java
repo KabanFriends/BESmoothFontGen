@@ -5,11 +5,13 @@ import io.github.kabanfriends.smoothfontgen.config.FontInfo;
 import io.github.kabanfriends.smoothfontgen.config.FontRange;
 
 import java.io.File;
+import java.util.List;
 
 public class SmoothGenerator {
 
     private final Config config;
     private final FontHolder fontHolder;
+    private final CellLayout cellLayout;
     private final RemapHandler remapHandler;
 
     public SmoothGenerator() {
@@ -18,7 +20,8 @@ public class SmoothGenerator {
 
         FontInfo<?>[] fileFontInfoArray = config.get(Config.FONTS);
         this.fontHolder = new FontHolder(fileFontInfoArray);
-        this.remapHandler = new RemapHandler(this, config.get(Config.PAGE_REMAPPING));
+        this.cellLayout = new CellLayout(config.get(Config.PAGE_REMAPPING), config.get(Config.REMAP_HANGUL_CHARS), config.get(Config.CELL_MAPPING));
+        this.remapHandler = new RemapHandler(cellLayout);
     }
 
     public void start() {
@@ -34,6 +37,10 @@ public class SmoothGenerator {
         }
         */
 
+        if (!checkCellLayout()) {
+            return;
+        }
+
         Logger.getInstance().info("Writing remapping.dat");
         if (!config.get(Config.TEST_MODE)) {
             remapHandler.writeRemappingFile();
@@ -48,10 +55,7 @@ public class SmoothGenerator {
         for (int i = 0; i <= loops; i++) {
             float percentage = i / (loops + 1F) * 100F;
             int pageId = i + offset;
-            int remappedPageId = remapHandler.remap(pageId);
-            if (!remapHandler.canWritePage(pageId)) {
-                Logger.getInstance().warn("[{}/{} {}%] Skipping {}-{} (Another page remaps to this page)", i + 1, loops + 1, String.format("%.2f", percentage), String.format("%04X", pageId * 0x100), String.format("%04X", pageId * 0x100 + 0xFF));
-            } else if (!PageUtil.isPageSupported(remappedPageId)) {
+            if (!PageUtil.isPageSupported(pageId)) {
                 Logger.getInstance().warn("[{}/{} {}%] Skipping {}-{} (Client does not load this page)", i + 1, loops + 1, String.format("%.2f", percentage), String.format("%04X", pageId * 0x100), String.format("%04X", pageId * 0x100 + 0xFF));
             } else {
                 Logger.getInstance().info("[{}/{} {}%] Generating {}-{}", i + 1, loops + 1, String.format("%.2f", percentage), String.format("%04X", pageId * 0x100), String.format("%04X", pageId * 0x100 + 0xFF));
@@ -63,6 +67,36 @@ public class SmoothGenerator {
         Logger.getInstance().info("Generation finished");
     }
 
+    private boolean checkCellLayout() {
+        if (config.hasFailed(Config.CELL_MAPPING)) {
+            Logger.getInstance().error("cellMapping could not be read, aborting");
+            return false;
+        }
+        if (!cellLayout.errors().isEmpty()) {
+            for (String error : cellLayout.errors()) {
+                Logger.getInstance().error("Invalid cell mapping: {}", error);
+            }
+            Logger.getInstance().error("{} invalid cell mapping(s), aborting", cellLayout.errors().size());
+            return false;
+        }
+        if (cellLayout.isEmpty()) {
+            return true;
+        }
+
+        Logger.getInstance().info("Cell mapping: {} remapped characters, {} sharing a cell, {} relocated into other cells, {} vacant cells",
+                cellLayout.remaps().size(), cellLayout.sharedCellCount(), cellLayout.relocatedCellCount(), cellLayout.vacantCellCount());
+
+        List<String> mismatches = cellLayout.verify(fontHolder);
+        if (!mismatches.isEmpty()) {
+            for (String mismatch : mismatches) {
+                Logger.getInstance().error("Cell mapping mismatch: {}", mismatch);
+            }
+            Logger.getInstance().error("{} character(s) would not render like the cell they are mapped to, aborting", mismatches.size());
+            return false;
+        }
+        return true;
+    }
+
     public Config getConfig() {
         return config;
     }
@@ -71,7 +105,7 @@ public class SmoothGenerator {
         return fontHolder;
     }
 
-    public RemapHandler getRemapHandler() {
-        return this.remapHandler;
+    public CellLayout getCellLayout() {
+        return cellLayout;
     }
 }

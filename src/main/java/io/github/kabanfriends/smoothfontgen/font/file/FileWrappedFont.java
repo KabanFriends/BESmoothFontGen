@@ -18,6 +18,16 @@ public interface FileWrappedFont extends WrappedFont<FileFontInfo> {
 
     float getCorrectionFactor();
 
+    int getGlyphId(char index);
+
+    @Override
+    default String renderKey(char id) {
+        return "file|" + getFontInfo().filename()
+                + "|" + getGlyphId(id)
+                + "|" + Float.toString(getFontInfo().fontSize())
+                + "|" + getFontInfo().additionalArgs();
+    }
+
     @Override
     default List<String> processGlyph(char id, String outFilename) {
         Path fontPath = Paths.get("fonts/" + getFontInfo().filename());

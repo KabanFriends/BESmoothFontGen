@@ -46,6 +46,12 @@ public class FontHolder {
         return fallbackFont;
     }
 
+    /** Width written to .fontdata for this character, including the font's external padding. */
+    public float getWidth(char index) {
+        WrappedFont<?> font = getFirstFont(index);
+        return font.getWidth(index) + font.getFontInfo().padding() / 64;
+    }
+
     public int getFontCount() {
         return fonts.size();
     }

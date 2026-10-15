@@ -47,25 +47,33 @@ public class GlyphPage {
 
     public void generate() {
         char start = (char) (pageId * 0x100);
+        CellLayout layout = main.getCellLayout();
 
         //noinspection unchecked
         Future<Glyph>[] results = (Future<Glyph>[]) Array.newInstance(Future.class, 0x100);
 
         for (int i = 0; i < 0x100; i++) {
-            char id = (char) (start + i);
+            char cell = (char) (start + i);
+            Character occupant = layout.occupantOf(cell);
 
             Callable<Glyph> task = () -> {
+                if (occupant == null) {
+                    // The cell's own character is drawn from another cell and nothing was moved here
+                    return new Glyph(cell, cell, 0F, EMPTY_IMAGE, "None (vacated)");
+                }
+
+                char id = occupant;
                 WrappedFont<?> font = main.getFontHolder().getFirstFont(id);
-                float width = font.getWidth(id) + font.getFontInfo().padding() / 64;
+                float width = main.getFontHolder().getWidth(id);
 
                 if (id == 0x00) {
-                    return new Glyph(id, width, EMPTY_IMAGE, "None");
+                    return new Glyph(cell, id, width, EMPTY_IMAGE, "None");
                 }
 
                 String argStr = font.getFontInfo().additionalArgs();
                 List<String> additionalArgs = argStr.isEmpty() ? Collections.emptyList() : Arrays.asList(argStr.split(" "));
 
-                String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) id) + ".png";
+                String outFilename = "msdfgen/out/out_" + String.format("%04X", (int) cell) + ".png";
 
                 List<String> args = font.processGlyph(id, outFilename);
                 args.addAll(additionalArgs);
@@ -87,13 +95,13 @@ public class GlyphPage {
                         BufferedImage image = ImageIO.read(imageFile);
                         font.postCleanup(id, outFilename);
 
-                        return new Glyph(id, width, image, font.getFontInfo().name());
+                        return new Glyph(cell, id, width, image, font.getFontInfo().name());
                     } catch (InterruptedException | IOException e) {
                         Logger.getInstance().error("msdfgen for {} failed", String.format("%04X", (int) id), e);
                         throw e;
                     }
                 } else {
-                    return new Glyph(id, width, EMPTY_IMAGE, font.getFontInfo().name());
+                    return new Glyph(cell, id, width, EMPTY_IMAGE, font.getFontInfo().name());
                 }
             };
             results[i] = executor.submit(task);
@@ -115,49 +123,56 @@ public class GlyphPage {
         for (int i = 0; i < results.length; i++) {
             int x = i % 0x10;
             int y = i / 0x10;
+            Glyph glyph;
             try {
-                Glyph glyph = results[i].get();
-                graphics.drawImage(glyph.image(), x * 64, y * 64, null);
-                buffer.putFloat(glyph.width());
-                if (main.getConfig().get(Config.SHOW_GLYPH_INFO)) {
-                    if (CharUtil.isControlChar(glyph.charId)) {
-                        Logger.getInstance().info("{} - Width: {}, Source: {}", String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
-                    } else {
-                        Logger.getInstance().info("{} ({}) - Width: {}, Source: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), glyph.width(), glyph.source());
-                    }
-                }
+                glyph = results[i].get();
             } catch (CancellationException | ExecutionException | InterruptedException e) {
-                Logger.getInstance().error("Glyph generation task failed", e);
+                Logger.getInstance().error("Glyph generation task for cell {} failed", String.format("%04X", start + i), e);
+                // Keep every following width in its own slot
+                buffer.putFloat(0F);
+                continue;
+            }
+            graphics.drawImage(glyph.image(), x * 64, y * 64, null);
+            buffer.putFloat(glyph.width());
+            if (main.getConfig().get(Config.SHOW_GLYPH_INFO)) {
+                String relocated = glyph.cell() != glyph.charId() ? String.format(" (in cell %04X)", (int) glyph.cell()) : "";
+                if (CharUtil.isControlChar(glyph.charId())) {
+                    Logger.getInstance().info("{}{} - Width: {}, Source: {}", String.format("%04X", (int) glyph.charId()), relocated, glyph.width(), glyph.source());
+                } else {
+                    Logger.getInstance().info("{} ({}){} - Width: {}, Source: {}", glyph.charId(), String.format("%04X", (int) glyph.charId()), relocated, glyph.width(), glyph.source());
+                }
             }
         }
-
-        int remappedPageId = main.getRemapHandler().remap(pageId);
-        if (pageId != remappedPageId) {
-            Logger.getInstance().info("Remapping page {} to {}", String.format("%02X", pageId), String.format("%02X", remappedPageId));
-        }
+        graphics.dispose();
 
         if (!main.getConfig().get(Config.TEST_MODE)) {
-            try (FileOutputStream outputStream = new FileOutputStream("smooth/smooth_" + String.format("%02X", remappedPageId) + ".fontdata")) {
-                ImageIO.write(image, "PNG", new File("smooth/smooth_" + String.format("%02X", remappedPageId) + ".png"));
+            try (FileOutputStream outputStream = new FileOutputStream("smooth/smooth_" + String.format("%02X", pageId) + ".fontdata")) {
+                ImageIO.write(image, "PNG", new File("smooth/smooth_" + String.format("%02X", pageId) + ".png"));
                 outputStream.write(buffer.array());
             } catch (IOException e) {
-                Logger.getInstance().error("Failed to write font page {}", String.format("%02X", remappedPageId), e);
+                Logger.getInstance().error("Failed to write font page {}", String.format("%02X", pageId), e);
             }
         }
     }
 
     static class Glyph {
 
+        private final char cell;
         private final char charId;
         private final float width;
         private final BufferedImage image;
         private final String source;
 
-        Glyph(char charId, float width, BufferedImage image, String source) {
+        Glyph(char cell, char charId, float width, BufferedImage image, String source) {
+            this.cell = cell;
             this.charId = charId;
             this.width = width;
             this.image = image;
             this.source = source;
+        }
+
+        public char cell() {
+            return cell;
         }
 
         public char charId() {

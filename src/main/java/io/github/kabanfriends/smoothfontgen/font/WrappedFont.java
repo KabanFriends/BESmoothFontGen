@@ -15,6 +15,12 @@ public interface WrappedFont<T extends FontInfo<?>> {
 
     List<String> processGlyph(char id, String outFilename);
 
+    /**
+     * Identify the texture this font draws for a character. Two characters with equal keys
+     * produce identical texture cells, so one cell can serve both.
+     */
+    String renderKey(char id);
+
     default void postCleanup(char id, String outFilename) {
         File imageFile = new File(outFilename);
         imageFile.delete();
