@@ -37,6 +37,16 @@ public class TrueTypeWrappedFont implements FileWrappedFont {
     }
 
     @Override
+    public int getGlyphId(char index) {
+        try {
+            CmapSubtable subTable = font.getCmap().getSubtable(3, 1);
+            return subTable == null ? 0 : subTable.getGlyphId(index);
+        } catch (IOException ignored) {
+            return 0;
+        }
+    }
+
+    @Override
     public float getCorrectionFactor() {
         try {
             return 1000F / font.getUnitsPerEm();

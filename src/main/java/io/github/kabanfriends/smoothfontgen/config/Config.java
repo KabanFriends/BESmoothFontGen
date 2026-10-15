@@ -12,8 +12,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Config {
 
@@ -24,6 +26,7 @@ public class Config {
     public static final ConfigKey<FontInfo[]> FONTS = new ConfigKey<>("fonts", JsonCodecs.FONT_PROPERTY_ARRAY, new FileFontInfo[0]);
     public static final ConfigKey<PageRemap[]> PAGE_REMAPPING = new ConfigKey<>("pageRemapping", JsonCodecs.PAGE_REMAP_ARRAY, new PageRemap[0]);
     public static final ConfigKey<Boolean> REMAP_HANGUL_CHARS = new ConfigKey<>("remapHangulChars", JsonCodecs.BOOLEAN, false);
+    public static final ConfigKey<CellMapping[]> CELL_MAPPING = new ConfigKey<>("cellMapping", JsonCodecs.CELL_MAPPING_ARRAY, new CellMapping[0]);
 
     private static final List<ConfigKey<?>> CONFIG_KEYS = Arrays.asList(
             TEST_MODE,
@@ -32,10 +35,12 @@ public class Config {
             RANGE,
             FONTS,
             PAGE_REMAPPING,
-            REMAP_HANGUL_CHARS
+            REMAP_HANGUL_CHARS,
+            CELL_MAPPING
     );
 
     private final Map<ConfigKey<?>, Object> values = new HashMap<>();
+    private final Set<ConfigKey<?>> failedKeys = new HashSet<>();
 
     public void load(File configFile) {
         try (FileReader reader = new FileReader(configFile)) {
@@ -47,6 +52,7 @@ public class Config {
                 try {
                     values.put(key, key.codec().deserialize(new JsonProperty(json, key.id())));
                 } catch (Exception e) {
+                    failedKeys.add(key);
                     Logger.getInstance().error("Failed to parse config key {}", key.id(), e);
                 }
             }
@@ -55,6 +61,11 @@ public class Config {
         } catch (JsonParseException | IllegalStateException e) {
             Logger.getInstance().error("Malformed config json", e);
         }
+    }
+
+    /** @return true if the key was present in the config file but could not be parsed */
+    public boolean hasFailed(ConfigKey<?> key) {
+        return failedKeys.contains(key);
     }
 
     public <T> T get(ConfigKey<T> key) {

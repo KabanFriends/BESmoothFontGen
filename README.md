@@ -51,6 +51,21 @@ Generating the smooth font on Linux is several times faster than on Windows.
     - `size`: Size of the character to render in points.
     - `padding`: Amount of extra padding to add to the width of each character in this font.
     - `additionalArgs`: Additional parameters passed to the msdfgen process when generating the font texture. See [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) for more information.
+- `cellMapping` (optional): Redirects characters to other characters' texture cells through `remapping.dat`. Either an inline array, or the path of a JSON file whose `mappings` property holds the array:
+    ```json
+    {
+        "mappings": [
+            { "char": "0410", "cell": "0041" },
+            { "char": "2660", "cell": "0410" }
+        ]
+    }
+    ```
+    Each entry makes `char` use the texture **and width** stored in the cell of `cell`. Code points are hexadecimal.
+    - When a character is mapped away from its own cell, that cell is free. The lowest character mapped into it is drawn there instead (above, U+2660 ♠ is drawn in U+0410's cell); if nothing is mapped into it, the cell is left empty.
+    - Every other character mapped into a cell must render exactly like the cell's occupant (same traced glyph, render parameters and width). This is checked before generation, and the generator stops if any pair would differ.
+    - `cell` must be on a page the client loads, and a character can only be mapped once.
+- `pageRemapping` (optional, legacy): Draws a whole page into another page's cells. Entries are expanded into the same per-character mapping as `cellMapping`; the cells of the target page cannot also be used by `cellMapping`.
+- `remapHangulChars` (optional, legacy): With `pageRemapping`, also redirect the target page's own characters to U+FFFE when the target page is in the Hangul Syllables range. Other target pages are always redirected.
 
 ## Compiling
 You can compile BESmoothFontGen yourself with the following command:
@@ -73,3 +88,7 @@ Each glyph texture uses the MTSDF format, a combination of MSDF and true SDF in 
 ### Width
 Character widths are stored in binary files with the extension of `fontdata` in the `font/smooth` folder of the resource pack.
 The first 4 bytes in the file are all 0x00. Then, for each character in the page, the file writes little-endian 32-bit floats between 0.0 and 1.0 where the width of 1.0 the full 64 pixels of the glyph grid.
+
+### Remapping
+`remapping.dat` in the `font/smooth` folder redirects characters to the texture cell of another character. The file is a list of 4-byte entries, each made of the source and the target code point as little-endian 16-bit integers.
+A remapped character uses both the texture and the width of the target cell, and remaps are not followed in chains.

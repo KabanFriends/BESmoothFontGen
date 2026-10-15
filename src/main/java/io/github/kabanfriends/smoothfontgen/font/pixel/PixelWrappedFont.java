@@ -153,6 +153,14 @@ public class PixelWrappedFont implements WrappedFont<PixelFontInfo> {
     }
 
     @Override
+    public String renderKey(char id) {
+        return "pixel|" + gridWidth + "x" + gridHeight
+                + "|" + Double.toString(getRenderScale())
+                + "|" + info.additionalArgs()
+                + "|" + ShapeDescGenerator.imageToShapeDesc(getGlyphImage(id));
+    }
+
+    @Override
     public List<String> processGlyph(char id, String outFilename) {
         String hexId = String.format("%04X", (int) id);
         Image image = getGlyphImage(id);
